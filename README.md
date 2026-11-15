@@ -1,0 +1,46 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'StudentAttendanceOffline.zip'
+      - '.github/workflows/build-apk.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Extract Android project
+        run: |
+          unzip -q StudentAttendanceOffline.zip
+          test -f StudentAttendanceOffline/app/build.gradle
+
+      - name: Build APK
+        working-directory: StudentAttendanceOffline
+        run: gradle --no-daemon assembleDebug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: StudentAttendance-debug-apk
+          path: StudentAttendanceOffline/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+.github/workflows/build-apk.ymlStudentAttendance
